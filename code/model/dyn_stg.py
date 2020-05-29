@@ -73,7 +73,7 @@ class SpatioTemporalGraphCVAEModel(object):
 
         # This is important to ensure that each node model is using the same training data points.
         mhl, ph = self.hyperparams['minimum_history_length'], self.hyperparams['prediction_horizon']
-        if np.any(inputs['traj_lengths'] < mhl + ph):
+        if np.any(inputs['traj_lengths'].data.cpu().numpy() < mhl + ph):
             batch_size = inputs['traj_lengths'].shape[0]
             idxs_to_keep = [batch_idx for batch_idx, traj_len in enumerate(inputs['traj_lengths']) if traj_len >= mhl + ph]
 
@@ -84,13 +84,13 @@ class SpatioTemporalGraphCVAEModel(object):
                 labels[key] = value[idxs_to_keep]
 
             print("""WARNING: There are trajectory lengths less than %d (= minimum_history_length + prediction_horizon) in the training input!
-Ignoring those indices, the batch size will be reduced from %d to %d.""" % (mhl + ph, batch_size, inputs['traj_lengths'].shape[0]))
+                Ignoring those indices, the batch size will be reduced from %d to %d.""" % (mhl + ph, batch_size, inputs['traj_lengths'].shape[0]))
 
         traj_lengths = inputs['traj_lengths']
         prediction_timesteps = mhl - 1 + torch.fmod(torch.randint(low=0, 
                                                                   high=2**31-1, 
                                                                   size=traj_lengths.shape).to(self.device),
-                                                    traj_lengths-mhl-ph+1).long()
+                                                    (traj_lengths-mhl-ph+1).long()).long()
 
         losses = list()
         for node in self.nodes:
@@ -110,7 +110,7 @@ Ignoring those indices, the batch size will be reduced from %d to %d.""" % (mhl 
 
         # This is important to ensure that each node model is using the same eval data points.
         mhl, ph = self.hyperparams['minimum_history_length'], self.hyperparams['prediction_horizon']
-        if np.any(inputs['traj_lengths'] < mhl + ph):
+        if np.any(inputs['traj_lengths'].data.cpu().numpy() < mhl + ph):
             batch_size = inputs['traj_lengths'].shape[0]
             idxs_to_keep = [batch_idx for batch_idx, traj_len in enumerate(inputs['traj_lengths']) if traj_len >= mhl + ph]
 
@@ -121,7 +121,7 @@ Ignoring those indices, the batch size will be reduced from %d to %d.""" % (mhl 
                 labels[key] = value[idxs_to_keep]
 
             print("""WARNING: There are trajectory lengths less than %d (= minimum_history_length + prediction_horizon) in the evaluation input!
-Ignoring those indices, the batch size will be reduced from %d to %d.""" % (mhl + ph, batch_size, inputs['traj_lengths'].shape[0]))
+                Ignoring those indices, the batch size will be reduced from %d to %d.""" % (mhl + ph, batch_size, inputs['traj_lengths'].shape[0]))
 
         nll_q_is_values = list()
         nll_p_values = list()

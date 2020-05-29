@@ -307,7 +307,7 @@ def get_sgan_data_format(our_inputs, what_to_check='all'):
 
 def get_our_model_dir(dataset_name):
     if dataset_name == 'eth':
-        return 'models_03_Mar_2019_00_23_46'
+        return 'models_24_May_2020_20_50_11'
     elif dataset_name == 'hotel':
         return 'models_03_Mar_2019_00_24_04'
     elif dataset_name == 'univ':
